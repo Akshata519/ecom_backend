@@ -60,7 +60,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { email: user.email, role: user.role, id: user._id },
+      { email: user.email, role: user.role, _id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -89,8 +89,31 @@ const logout = (req, res) => {
     message: "Logout successful",
   });
 };
+
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({
+      authentication: false,
+    });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({
+      authentication: true,
+      user: decoded,
+    });
+  } catch (error) {
+    res.status(401).json({
+      authentication: false,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
+  verifyUser,
 };
